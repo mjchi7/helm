@@ -376,8 +376,16 @@ func (c *ReadyChecker) statefulSetReady(sts *appsv1.StatefulSet) bool {
 	// updated
 	expectedReplicas := replicas - partition
 
+	updateRevision := sts.Status.UpdateRevision
+	currentRevision := sts.Status.CurrentRevision
+
+	c.log("Update Revision: %s", updateRevision)
+	c.log("UpdatedReplicas: %d", int(sts.Status.UpdatedReplicas))
+	c.log("Current Revision: %s", currentRevision)
+	c.log("Expected Replicas: %d", expectedReplicas)
+
 	// Make sure all the updated pods have been scheduled
-	if int(sts.Status.UpdatedReplicas) != expectedReplicas {
+	if updateRevision != currentRevision && int(sts.Status.UpdatedReplicas) != expectedReplicas {
 		c.log("StatefulSet is not ready: %s/%s. %d out of %d expected pods have been scheduled", sts.Namespace, sts.Name, sts.Status.UpdatedReplicas, expectedReplicas)
 		return false
 	}
